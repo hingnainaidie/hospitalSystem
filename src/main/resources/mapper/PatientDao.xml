@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.PatientDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Patient">
+        <!--@Table patient-->
+        <result property="patientId" column="patient_id" jdbcType="INTEGER"/>
+        <result property="patientName" column="patient_name" jdbcType="VARCHAR"/>
+        <result property="patientGender" column="patient_gender" jdbcType="VARCHAR"/>
+        <result property="patientIdentify" column="patient_identify" jdbcType="VARCHAR"/>
+        <result property="patientPhone" column="patient_phone" jdbcType="VARCHAR"/>
+        <result property="patientPassword" column="patient_password" jdbcType="VARCHAR"/>
+        <result property="patientAge" column="patient_age" jdbcType="INTEGER"/>
+        <result property="patientAddr" column="patient_addr" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="reg_patient"  parameterType="java.lang.Long"   resultType="com.cqu.hospitalsystem.entity.Patient">
+        select patient.patient_id, patient.patient_name, patient.patient_gender, patient.patient_identify, patient.patient_phone, patient.patient_password, patient.patient_age, patient.patient_addr
+        from patient,registration
+        where registration.reg_id=#{regId} and registration.patient_id=patient.patient_id
+    </select>
+
+    <select id="searchPatient" resultType="com.cqu.hospitalsystem.entity.Patient">
+        select patient.patient_id, patient.patient_name, patient.patient_gender, patient.patient_identify, patient.patient_phone, patient.patient_password, patient.patient_age, patient.patient_addr
+        from patient
+        where patient_identify=#{patientIdentify}
+    </select>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          patient_id, patient_name, patient_gender, patient_identify, patient_phone, patient_password, patient_age, patient_addr
+        from patient
+        where patient_id = #{patientId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          patient_id, patient_name, patient_gender, patient_identify, patient_phone, patient_password, patient_age, patient_addr
+        from patient
+        <where>
+            <if test="patientId != null">
+                and patient_id = #{patientId}
+            </if>
+            <if test="patientName != null and patientName != ''">
+                and patient_name = #{patientName}
+            </if>
+            <if test="patientGender != null and patientGender != ''">
+                and patient_gender = #{patientGender}
+            </if>
+            <if test="patientIdentify != null and patientIdentify != ''">
+                and patient_identify = #{patientIdentify}
+            </if>
+            <if test="patientPhone != null and patientPhone != ''">
+                and patient_phone = #{patientPhone}
+            </if>
+            <if test="patientPassword != null and patientPassword != ''">
+                and patient_password = #{patientPassword}
+            </if>
+            <if test="patientAge != null">
+                and patient_age = #{patientAge}
+            </if>
+            <if test="patientAddr != null and patientAddr != ''">
+                and patient_addr = #{patientAddr}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          patient_id, patient_name, patient_gender, patient_identify, patient_phone, patient_password, patient_age, patient_addr
+        from hospital.patient
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from patient
+        <where>
+            <if test="patientId != null">
+                and patient_id = #{patientId}
+            </if>
+            <if test="patientName != null and patientName != ''">
+                and patient_name = #{patientName}
+            </if>
+            <if test="patientGender != null and patientGender != ''">
+                and patient_gender = #{patientGender}
+            </if>
+            <if test="patientIdentify != null and patientIdentify != ''">
+                and patient_identify = #{patientIdentify}
+            </if>
+            <if test="patientPhone != null and patientPhone != ''">
+                and patient_phone = #{patientPhone}
+            </if>
+            <if test="patientPassword != null and patientPassword != ''">
+                and patient_password = #{patientPassword}
+            </if>
+            <if test="patientAge != null">
+                and patient_age = #{patientAge}
+            </if>
+            <if test="patientAddr != null and patientAddr != ''">
+                and patient_addr = #{patientAddr}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="patientId" useGeneratedKeys="true">
+        insert into patient(patient_name, patient_gender, patient_identify, patient_phone, patient_password, patient_age, patient_addr)
+        values (#{patientName}, #{patientGender}, #{patientIdentify}, #{patientPhone}, #{patientPassword}, #{patientAge}, #{patientAddr})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="patientId" useGeneratedKeys="true">
+        insert into patient(patient_name, patient_gender, patient_identify, patient_phone, patient_password, patient_age, patient_addr)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.patientName}, #{entity.patientGender}, #{entity.patientIdentify}, #{entity.patientPhone}, #{entity.patientPassword}, #{entity.patientAge}, #{entity.patientAddr})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="patientId" useGeneratedKeys="true">
+        insert into patient(patient_name, patient_gender, patient_identify, patient_phone, patient_password, patient_age, patient_addr)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.patientName}, #{entity.patientGender}, #{entity.patientIdentify}, #{entity.patientPhone}, #{entity.patientPassword}, #{entity.patientAge}, #{entity.patientAddr})
+        </foreach>
+        on duplicate key update
+        patient_name = values(patient_name),
+        patient_gender = values(patient_gender),
+        patient_identify = values(patient_identify),
+        patient_phone = values(patient_phone),
+        patient_password = values(patient_password),
+        patient_age = values(patient_age),
+        patient_addr = values(patient_addr)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update patient
+        <set>
+            <if test="patientName != null and patientName != ''">
+                patient_name = #{patientName},
+            </if>
+            <if test="patientGender != null and patientGender != ''">
+                patient_gender = #{patientGender},
+            </if>
+            <if test="patientIdentify != null and patientIdentify != ''">
+                patient_identify = #{patientIdentify},
+            </if>
+            <if test="patientPhone != null and patientPhone != ''">
+                patient_phone = #{patientPhone},
+            </if>
+            <if test="patientPassword != null and patientPassword != ''">
+                patient_password = #{patientPassword},
+            </if>
+            <if test="patientAge != null">
+                patient_age = #{patientAge},
+            </if>
+            <if test="patientAddr != null and patientAddr != ''">
+                patient_addr = #{patientAddr},
+            </if>
+        </set>
+        where patient_id = #{patientId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from patient where patient_id = #{patientId}
+    </delete>
+
+    <!--登录-->
+    <select id="loginPatient" resultType="com.cqu.hospitalsystem.entity.Patient">
+        select patient.patient_id, patient.patient_name, patient.patient_gender, patient.patient_identify, patient.patient_phone, patient.patient_password, patient.patient_age, patient.patient_addr
+        from patient
+        where patient.patient_phone =#{patientPhone} and patient.patient_password = #{patientPassword}
+    </select>
+
+    <!--修改基本信息-->
+    <update id="editInfo">
+        update patient
+        <set>
+            <if test="patientName != null and patientName != ''">
+                patient_name = #{patientName},
+            </if>
+            <if test="patientGender != null and patientGender != ''">
+                patient_gender = #{patientGender},
+            </if>
+            <if test="patientAge != null and patientAge != ''">
+                patient_age = #{patientAge},
+            </if>
+            <if test="patientIdentify != null and patientIdentify != ''">
+                patient_identify = #{patientIdentify},
+            </if>
+            <if test="patientPhone != null and patientPhone != ''">
+                patient_phone = #{patientPhone},
+            </if>
+            <if test="patientAddr != null and patientAddr != ''">
+                patient_addr = #{patientAddr},
+            </if>
+        </set>
+        where patient_id = #{patientId}
+    </update>
+
+    <!--    查看密码是否正确-->
+    <select id="searchPwd" resultMap="BaseResultMap">
+        select * from patient
+        where patient.patient_id = #{patientId}
+    </select>
+
+    <!--修改密码-->
+    <update id="editPwd">
+        update patient
+        <set>
+            <if test="newPwd != null and newPwd != ''">
+                patient_password = #{newPwd},
+            </if>
+        </set>
+        where patient_id = #{patientId}
+    </update>
+
+    <select id="searchForPatient" resultMap="BaseResultMap">
+        select * from patient
+        where patient.patient_phone = #{patientPhone}
+    </select>
+
+</mapper>
+

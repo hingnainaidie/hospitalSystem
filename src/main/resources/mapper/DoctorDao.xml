@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.DoctorDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Doctor">
+        <!--@Table doctor-->
+        <result property="docId" column="doc_id" jdbcType="INTEGER"/>
+        <result property="docName" column="doc_name" jdbcType="VARCHAR"/>
+        <result property="docPassword" column="doc_password" jdbcType="VARCHAR"/>
+        <result property="docGender" column="doc_gender" jdbcType="VARCHAR"/>
+        <result property="docIdentify" column="doc_identify" jdbcType="INTEGER"/>
+        <result property="docPhone" column="doc_phone" jdbcType="VARCHAR"/>
+        <result property="docAge" column="doc_age" jdbcType="INTEGER"/>
+        <result property="docLevel" column="doc_level" jdbcType="VARCHAR"/>
+        <result property="officeId" column="office_id" jdbcType="INTEGER"/>
+        <result property="docPrice" column="doc_price" jdbcType="INTEGER"/>
+        <result property="maxPatient" column="max_patient" jdbcType="INTEGER"/>
+        <result property="currentPatient" column="current_patient" jdbcType="INTEGER"/>
+        <result property="classifcation" column="classifcation" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="loginDoctor" resultMap="BaseResultMap">
+        select
+            doc_id, doc_name, doc_password, doc_gender, doc_identify, doc_phone, doc_age, doc_level, office_id, doc_price, max_patient, current_patient, classifcation
+        from doctor
+        where doc_phone =#{docPhone} and doc_password = #{docPassword}
+    </select>
+    <update id="editDocPwd" parameterType="com.cqu.hospitalsystem.entity.Doctor">
+        update doctor set doc_password=#{docPassword} where doc_id = #{docId}
+    </update>
+
+    <update id="editDocInfo" parameterType="com.cqu.hospitalsystem.entity.Doctor">
+        update doctor
+        set doc_name=#{docName},doc_gender=#{docGender},
+            doc_identify=#{docIdentify},doc_phone=#{docPhone},doc_age=#{docAge}
+        where doc_id = #{docId}
+    </update>
+
+    <select id="selectByOffice" resultMap="BaseResultMap">
+        select *
+        from doctor
+        where office_id = #{officeId}
+    </select>
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          doc_id, doc_name, doc_password, doc_gender, doc_identify, doc_phone, doc_age, doc_level, office_id, doc_price, max_patient, current_patient, classifcation
+        from doctor
+        where doc_id = #{docId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          doc_id, doc_name, doc_password, doc_gender, doc_identify, doc_phone, doc_age, doc_level, office_id, doc_price, max_patient, current_patient, classifcation
+        from doctor
+        <where>
+            <if test="docId != null">
+                and doc_id = #{docId}
+            </if>
+            <if test="docName != null and docName != ''">
+                and doc_name = #{docName}
+            </if>
+            <if test="docPassword != null and docPassword != ''">
+                and doc_password = #{docPassword}
+            </if>
+            <if test="docGender != null and docGender != ''">
+                and doc_gender = #{docGender}
+            </if>
+            <if test="docIdentify != null">
+                and doc_identify = #{docIdentify}
+            </if>
+            <if test="docPhone != null and docPhone != ''">
+                and doc_phone = #{docPhone}
+            </if>
+            <if test="docAge != null">
+                and doc_age = #{docAge}
+            </if>
+            <if test="docLevel != null and docLevel != ''">
+                and doc_level = #{docLevel}
+            </if>
+            <if test="officeId != null">
+                and office_id = #{officeId}
+            </if>
+            <if test="docPrice != null">
+                and doc_price = #{docPrice}
+            </if>
+            <if test="maxPatient != null">
+                and max_patient = #{maxPatient}
+            </if>
+            <if test="currentPatient != null">
+                and current_patient = #{currentPatient}
+            </if>
+            <if test="classifcation != null">
+                and classifcation = #{classifcation}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          doc_id, doc_name, doc_password, doc_gender, doc_identify, doc_phone, doc_age, doc_level, office_id, doc_price, max_patient, current_patient, classifcation
+        from hospital.doctor where classifcation=0
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from doctor
+        <where>
+            <if test="docId != null">
+                and doc_id = #{docId}
+            </if>
+            <if test="docName != null and docName != ''">
+                and doc_name = #{docName}
+            </if>
+            <if test="docPassword != null and docPassword != ''">
+                and doc_password = #{docPassword}
+            </if>
+            <if test="docGender != null and docGender != ''">
+                and doc_gender = #{docGender}
+            </if>
+            <if test="docIdentify != null">
+                and doc_identify = #{docIdentify}
+            </if>
+            <if test="docPhone != null and docPhone != ''">
+                and doc_phone = #{docPhone}
+            </if>
+            <if test="docAge != null">
+                and doc_age = #{docAge}
+            </if>
+            <if test="docLevel != null and docLevel != ''">
+                and doc_level = #{docLevel}
+            </if>
+            <if test="officeId != null">
+                and office_id = #{officeId}
+            </if>
+            <if test="docPrice != null">
+                and doc_price = #{docPrice}
+            </if>
+            <if test="maxPatient != null">
+                and max_patient = #{maxPatient}
+            </if>
+            <if test="currentPatient != null">
+                and current_patient = #{currentPatient}
+            </if>
+            <if test="classifcation != null">
+                and classifcation = #{classifcation}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="docId" useGeneratedKeys="true">
+        insert into doctor(doc_name, doc_password, doc_gender, doc_identify, doc_phone, doc_age, doc_level, office_id, doc_price, max_patient, current_patient, classifcation)
+        values (#{docName}, #{docPassword}, #{docGender}, #{docIdentify}, #{docPhone}, #{docAge}, #{docLevel}, #{officeId}, #{docPrice}, #{maxPatient}, #{currentPatient}, #{classifcation})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="docId" useGeneratedKeys="true">
+        insert into doctor(doc_name, doc_password, doc_gender, doc_identify, doc_phone, doc_age, doc_level, office_id, doc_price, max_patient, current_patient, classifcation)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.docName}, #{entity.docPassword}, #{entity.docGender}, #{entity.docIdentify}, #{entity.docPhone}, #{entity.docAge}, #{entity.docLevel}, #{entity.officeId}, #{entity.docPrice}, #{entity.maxPatient}, #{entity.currentPatient}, #{entity.classifcation})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="docId" useGeneratedKeys="true">
+        insert into doctor(doc_name, doc_password, doc_gender, doc_identify, doc_phone, doc_age, doc_level, office_id, doc_price, max_patient, current_patient, classifcation)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.docName}, #{entity.docPassword}, #{entity.docGender}, #{entity.docIdentify}, #{entity.docPhone}, #{entity.docAge}, #{entity.docLevel}, #{entity.officeId}, #{entity.docPrice}, #{entity.maxPatient}, #{entity.currentPatient}, #{entity.classifcation})
+        </foreach>
+        on duplicate key update
+        doc_name = values(doc_name),
+        doc_password = values(doc_password),
+        doc_gender = values(doc_gender),
+        doc_identify = values(doc_identify),
+        doc_phone = values(doc_phone),
+        doc_age = values(doc_age),
+        doc_level = values(doc_level),
+        office_id = values(office_id),
+        doc_price = values(doc_price),
+        max_patient = values(max_patient),
+        current_patient = values(current_patient),
+        classifcation = values(classifcation)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update doctor
+        <set>
+            <if test="docName != null and docName != ''">
+                doc_name = #{docName},
+            </if>
+            <if test="docPassword != null and docPassword != ''">
+                doc_password = #{docPassword},
+            </if>
+            <if test="docGender != null and docGender != ''">
+                doc_gender = #{docGender},
+            </if>
+            <if test="docIdentify != null">
+                doc_identify = #{docIdentify},
+            </if>
+            <if test="docPhone != null and docPhone != ''">
+                doc_phone = #{docPhone},
+            </if>
+            <if test="docAge != null">
+                doc_age = #{docAge},
+            </if>
+            <if test="docLevel != null and docLevel != ''">
+                doc_level = #{docLevel},
+            </if>
+            <if test="officeId != null">
+                office_id = #{officeId},
+            </if>
+            <if test="docPrice != null">
+                doc_price = #{docPrice},
+            </if>
+            <if test="maxPatient != null">
+                max_patient = #{maxPatient},
+            </if>
+            <if test="currentPatient != null">
+                current_patient = #{currentPatient},
+            </if>
+            <if test="classifcation != null">
+                classifcation = #{classifcation},
+            </if>
+        </set>
+        where doc_id = #{docId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from doctor where doc_id = #{docId}
+    </delete>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByAll" resultMap="BaseResultMap">
+        select
+        doc_id, doc_name, doc_password, doc_gender, doc_identify, doc_phone, doc_age, doc_level, office_id, doc_price, max_patient, current_patient, classifcation
+        from doctor
+        <where>
+            <if test="docId != null">
+                and doc_id = #{docId}
+            </if>
+            <if test="docName != null and docName != ''">
+                and doc_name = #{docName}
+            </if>
+            <if test="docPassword != null and docPassword != ''">
+                and doc_password = #{docPassword}
+            </if>
+            <if test="docGender != null and docGender != ''">
+                and doc_gender = #{docGender}
+            </if>
+            <if test="docIdentify != null">
+                and doc_identify = #{docIdentify}
+            </if>
+            <if test="docPhone != null and docPhone != ''">
+                and doc_phone = #{docPhone}
+            </if>
+            <if test="docAge != null">
+                and doc_age = #{docAge}
+            </if>
+            <if test="docLevel != null and docLevel != ''">
+                and doc_level = #{docLevel}
+            </if>
+            <if test="officeId != null">
+                and office_id = #{officeId}
+            </if>
+            <if test="docPrice != null">
+                and doc_price = #{docPrice}
+            </if>
+            <if test="maxPatient != null">
+                and max_patient = #{maxPatient}
+            </if>
+            <if test="currentPatient != null">
+                and current_patient = #{currentPatient}
+            </if>
+            <if test="classifcation != null">
+                and classifcation = 0
+            </if>
+        </where>
+    </select>
+
+</mapper>
+

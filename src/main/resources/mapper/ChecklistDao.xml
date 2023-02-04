@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.ChecklistDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Checklist">
+        <!--@Table checklist-->
+        <result property="checklistId" column="checklist_id" jdbcType="INTEGER"/>
+        <result property="prescribeTime" column="prescribe_time" jdbcType="TIMESTAMP"/>
+        <result property="checklistStatus" column="checklist_status" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="getChecklistId" resultType="java.lang.Long">
+        select max(checklist_id)
+        from checklist
+    </select>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          checklist_id, prescribe_time, checklist_status
+        from checklist
+        where checklist_id = #{checklistId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          checklist_id, prescribe_time, checklist_status
+        from checklist
+        <where>
+            <if test="checklistId != null">
+                and checklist_id = #{checklistId}
+            </if>
+            <if test="prescribeTime != null">
+                and prescribe_time = #{prescribeTime}
+            </if>
+            <if test="checklistStatus != null">
+                and checklist_status = #{checklistStatus}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          checklist_id, prescribe_time, checklist_status
+        from hospital.checklist
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from checklist
+        <where>
+            <if test="checklistId != null">
+                and checklist_id = #{checklistId}
+            </if>
+            <if test="prescribeTime != null">
+                and prescribe_time = #{prescribeTime}
+            </if>
+            <if test="checklistStatus != null">
+                and checklist_status = #{checklistStatus}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="checklistId" useGeneratedKeys="true">
+        insert into checklist(prescribe_time, checklist_status)
+        values (#{prescribeTime}, #{checklistStatus})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="checklistId" useGeneratedKeys="true">
+        insert into checklist(prescribe_time, checklist_status)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.prescribeTime}, #{entity.checklistStatus})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="checklistId" useGeneratedKeys="true">
+        insert into checklist(prescribe_time, checklist_status)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.prescribeTime}, #{entity.checklistStatus})
+        </foreach>
+        on duplicate key update
+        prescribe_time = values(prescribe_time),
+        checklist_status = values(checklist_status)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update checklist
+        <set>
+            <if test="prescribeTime != null">
+                prescribe_time = #{prescribeTime},
+            </if>
+            <if test="checklistStatus != null">
+                checklist_status = #{checklistStatus},
+            </if>
+        </set>
+        where checklist_id = #{checklistId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from checklist where checklist_id = #{checklistId}
+    </delete>
+
+    <!--查看已缴费处方单检查项目列表，1为已缴费还未检查完-->
+    <select id="showPaidCheck" resultType="com.cqu.hospitalsystem.Vo.preCheck">
+        select registration.reg_id, checkitem.checkitem_id, office.office_name, checkitem.checkitem_name,
+               checkitem.check_part, checkitem.checkitem_price, checkitem.checkitem_note, checklist.checklist_status,
+               item_list_relation.state, item_list_relation.checklist_id, registration.appointment_time
+        from registration, id_relation, item_list_relation, checklist, checkitem,office
+        where registration.patient_id = #{patientId}
+          and checklist.checklist_status > 0
+          and 2 > checklist.checklist_status
+          and office.office_id = checkitem.office_id
+          and registration.reg_id = id_relation.reg_id
+          and id_relation.checklist_id = checklist.checklist_id
+          and checklist.checklist_id = item_list_relation.checklist_id
+          and item_list_relation.checkitem_id = checkitem.checkitem_id
+    </select>
+
+<!--    查看历史检查单-->
+    <select id="showCheck" resultType="com.cqu.hospitalsystem.Vo.checklistVo">
+        select registration.reg_id, office.office_name, doctor.doc_name, checklist.prescribe_time,
+               registration.appointment_time, doctor.doc_age, doctor.doc_gender, doctor.doc_phone,
+               medicalrecord.record_type, medicalrecord.record_result, checklist.checklist_status,
+               checklist.checklist_id
+        from office, doctor, checklist, registration, medicalrecord, id_relation
+        where checklist.checklist_id = #{checklistId}
+          and id_relation.checklist_id = checklist.checklist_id
+          and id_relation.reg_id = registration.reg_id
+          and id_relation.record_id = medicalrecord.mrecord_id
+          and registration.doc_id = doctor.doc_id
+          and doctor.office_id = office.office_id
+    </select>
+
+    <!--查看历史检查单检查列表，3为检查完成-->
+    <select id="showHistoryCheck" resultType="com.cqu.hospitalsystem.Vo.preCheck">
+        select registration.reg_id, checkitem.checkitem_id, office.office_name, checkitem.checkitem_name,
+               checkitem.check_part, checkitem.checkitem_price, checkitem.checkitem_note,
+               item_list_relation.state, item_list_relation.checklist_id, checklist.checklist_status
+        from registration, id_relation, item_list_relation, checklist, checkitem,office
+        where checklist.checklist_id = #{checkilistId}
+          and checklist.checklist_status = 2
+          and office.office_id = checkitem.office_id
+          and registration.reg_id = id_relation.reg_id
+          and id_relation.checklist_id = checklist.checklist_id
+          and checklist.checklist_id = item_list_relation.checklist_id
+          and item_list_relation.checkitem_id = checkitem.checkitem_id
+    </select>
+
+    <!--查看未支付的检查单-->
+    <select id="showUnpaidCheck" resultType="com.cqu.hospitalsystem.Vo.preCheck">
+        select registration.reg_id, checkitem.checkitem_id, office.office_name, checkitem.checkitem_name,
+               checkitem.check_part, checkitem.checkitem_price, checkitem.checkitem_note,
+               item_list_relation.state, item_list_relation.checklist_id, checklist.checklist_status
+        from registration, id_relation, item_list_relation, checklist, checkitem,office
+        where checklist.checklist_id = #{checkilistId}
+          and office.office_id = checkitem.office_id
+          and registration.reg_id = id_relation.reg_id
+          and id_relation.checklist_id = checklist.checklist_id
+          and checklist.checklist_id = item_list_relation.checklist_id
+          and item_list_relation.checkitem_id = checkitem.checkitem_id
+    </select>
+
+<!--    支付检查单-->
+    <update id="payCheck">
+        update checklist
+        <set>
+            checklist_status = 1
+        </set>
+            where checklist_id = #{checklistId}
+    </update>
+
+
+</mapper>
+

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.MedicalrecordDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Medicalrecord">
+        <!--@Table medicalrecord-->
+        <result property="mrecordId" column="mrecord_id" jdbcType="INTEGER"/>
+        <result property="recordType" column="record_type" jdbcType="VARCHAR"/>
+        <result property="illTime" column="ill_time" jdbcType="TIMESTAMP"/>
+        <result property="recordResult" column="record_result" jdbcType="VARCHAR"/>
+        <result property="allergy" column="allergy" jdbcType="VARCHAR"/>
+        <result property="presentIllness" column="present_illness" jdbcType="VARCHAR"/>
+    </resultMap>
+    <!--查询最大id-->
+    <select id="getMedicalID" resultType="java.lang.Long">
+        select max(mrecord_id)
+        from medicalrecord
+    </select>
+
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          mrecord_id, record_type, ill_time, record_result, allergy, present_illness
+        from medicalrecord
+        where mrecord_id = #{mrecordId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          mrecord_id, record_type, ill_time, record_result, allergy, present_illness
+        from medicalrecord
+        <where>
+            <if test="mrecordId != null">
+                and mrecord_id = #{mrecordId}
+            </if>
+            <if test="recordType != null and recordType != ''">
+                and record_type = #{recordType}
+            </if>
+            <if test="illTime != null">
+                and ill_time = #{illTime}
+            </if>
+            <if test="recordResult != null and recordResult != ''">
+                and record_result = #{recordResult}
+            </if>
+            <if test="allergy != null and allergy != ''">
+                and allergy = #{allergy}
+            </if>
+            <if test="presentIllness != null and presentIllness != ''">
+                and present_illness = #{presentIllness}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          mrecord_id, record_type, ill_time, record_result, allergy, present_illness
+        from hospital.medicalrecord
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from medicalrecord
+        <where>
+            <if test="mrecordId != null">
+                and mrecord_id = #{mrecordId}
+            </if>
+            <if test="recordType != null and recordType != ''">
+                and record_type = #{recordType}
+            </if>
+            <if test="illTime != null">
+                and ill_time = #{illTime}
+            </if>
+            <if test="recordResult != null and recordResult != ''">
+                and record_result = #{recordResult}
+            </if>
+            <if test="allergy != null and allergy != ''">
+                and allergy = #{allergy}
+            </if>
+            <if test="presentIllness != null and presentIllness != ''">
+                and present_illness = #{presentIllness}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="mrecordId" useGeneratedKeys="true">
+        insert into medicalrecord(record_type, ill_time, record_result, allergy, present_illness)
+        values (#{recordType}, #{illTime}, #{recordResult}, #{allergy}, #{presentIllness})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="mrecordId" useGeneratedKeys="true">
+        insert into medicalrecord(record_type, ill_time, record_result, allergy, present_illness)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.recordType}, #{entity.illTime}, #{entity.recordResult}, #{entity.allergy}, #{entity.presentIllness})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="mrecordId" useGeneratedKeys="true">
+        insert into medicalrecord(record_type, ill_time, record_result, allergy, present_illness)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.recordType}, #{entity.illTime}, #{entity.recordResult}, #{entity.allergy}, #{entity.presentIllness})
+        </foreach>
+        on duplicate key update
+        record_type = values(record_type),
+        ill_time = values(ill_time),
+        record_result = values(record_result),
+        allergy = values(allergy),
+        present_illness = values(present_illness)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update medicalrecord
+        <set>
+            <if test="recordType != null and recordType != ''">
+                record_type = #{recordType},
+            </if>
+            <if test="illTime != null">
+                ill_time = #{illTime},
+            </if>
+            <if test="recordResult != null and recordResult != ''">
+                record_result = #{recordResult},
+            </if>
+            <if test="allergy != null and allergy != ''">
+                allergy = #{allergy},
+            </if>
+            <if test="presentIllness != null and presentIllness != ''">
+                present_illness = #{presentIllness},
+            </if>
+        </set>
+        where mrecord_id = #{mrecordId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from medicalrecord where mrecord_id = #{mrecordId}
+    </delete>
+
+</mapper>
+

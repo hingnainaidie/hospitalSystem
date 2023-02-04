@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.RegistrationDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Registration">
+        <!--@Table registration-->
+        <result property="regId" column="reg_id" jdbcType="INTEGER"/>
+        <result property="docId" column="doc_id" jdbcType="INTEGER"/>
+        <result property="patientId" column="patient_id" jdbcType="INTEGER"/>
+        <result property="regTime" column="reg_time" jdbcType="TIMESTAMP"/>
+        <result property="appointmentTime" column="appointment_time" jdbcType="TIMESTAMP"/>
+        <result property="queueNumber" column="queue_number" jdbcType="INTEGER"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="visiting" resultMap="BaseResultMap">
+        select *
+        from hospital.registration
+        where doc_id=#{docId} and state =#{state}
+    </select>
+    <update id="endVisit" parameterType="com.cqu.hospitalsystem.entity.Registration">
+        update registration set state=5 where reg_id = #{regId}
+    </update>
+
+    <update id="suspendVisit" parameterType="com.cqu.hospitalsystem.entity.Registration">
+        update registration set state=3 where reg_id = #{regId}
+    </update>
+
+    <select id="queryByPatient" resultMap="BaseResultMap">
+        select
+            reg_id, doc_id, patient_id, reg_time, appointment_time, queue_number, state
+        from registration
+        where patient_id = #{patientId} and state = #{state}
+    </select>
+
+    <select id="countAppoint" resultType = "int">
+        select count(*)
+        from registration
+        where
+            doc_id=#{docId}
+          and
+                date_format(appointment_time,'%Y-%m-%d %H:%i:%S') &gt;= date_format(#{appointTime},'%Y-%m-%d %H:%i:%S')
+          and
+                date_format(appointment_time,'%Y-%m-%d %H:%i:%S') &lt;= date_format(#{tomorrow},'%Y-%m-%d %H:%i:%S')
+    </select>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          reg_id, doc_id, patient_id, reg_time, appointment_time, queue_number, state
+        from registration
+        where reg_id = #{regId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          reg_id, doc_id, patient_id, reg_time, appointment_time, queue_number, state
+        from registration
+        <where>
+            <if test="regId != null">
+                and reg_id = #{regId}
+            </if>
+            <if test="docId != null">
+                and doc_id = #{docId}
+            </if>
+            <if test="patientId != null">
+                and patient_id = #{patientId}
+            </if>
+            <if test="regTime != null">
+                and reg_time = #{regTime}
+            </if>
+            <if test="appointmentTime != null">
+                and appointment_time = #{appointmentTime}
+            </if>
+            <if test="queueNumber != null">
+                and queue_number = #{queueNumber}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          reg_id, doc_id, patient_id, reg_time, appointment_time, queue_number, state
+        from hospital.registration
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from registration
+        <where>
+            <if test="regId != null">
+                and reg_id = #{regId}
+            </if>
+            <if test="docId != null">
+                and doc_id = #{docId}
+            </if>
+            <if test="patientId != null">
+                and patient_id = #{patientId}
+            </if>
+            <if test="regTime != null">
+                and reg_time = #{regTime}
+            </if>
+            <if test="appointmentTime != null">
+                and appointment_time = #{appointmentTime}
+            </if>
+            <if test="queueNumber != null">
+                and queue_number = #{queueNumber}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="regId" useGeneratedKeys="true">
+        insert into registration(doc_id, patient_id, reg_time, appointment_time, queue_number, state)
+        values (#{docId}, #{patientId}, #{regTime}, #{appointmentTime}, #{queueNumber}, #{state})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="regId" useGeneratedKeys="true">
+        insert into registration(doc_id, patient_id, reg_time, appointment_time, queue_number, state)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.docId}, #{entity.patientId}, #{entity.regTime}, #{entity.appointmentTime}, #{entity.queueNumber}, #{entity.state})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="regId" useGeneratedKeys="true">
+        insert into registration(doc_id, patient_id, reg_time, appointment_time, queue_number, state)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.docId}, #{entity.patientId}, #{entity.regTime}, #{entity.appointmentTime}, #{entity.queueNumber}, #{entity.state})
+        </foreach>
+        on duplicate key update
+        doc_id = values(doc_id),
+        patient_id = values(patient_id),
+        reg_time = values(reg_time),
+        appointment_time = values(appointment_time),
+        queue_number = values(queue_number),
+        state = values(state)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update registration
+        <set>
+            <if test="docId != null">
+                doc_id = #{docId},
+            </if>
+            <if test="patientId != null">
+                patient_id = #{patientId},
+            </if>
+            <if test="regTime != null">
+                reg_time = #{regTime},
+            </if>
+            <if test="appointmentTime != null">
+                appointment_time = #{appointmentTime},
+            </if>
+            <if test="queueNumber != null">
+                queue_number = #{queueNumber},
+            </if>
+            <if test="state != null">
+                state = #{state},
+            </if>
+        </set>
+        where reg_id = #{regId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from registration where reg_id = #{regId}
+    </delete>
+
+<!--    查询历史预约信息列表-->
+    <select id="showHistory" resultType="com.cqu.hospitalsystem.Vo.historyRegVo">
+        select id_relation.id_relation_id, id_relation.reg_id, id_relation.record_id,
+               id_relation.prescription_id, id_relation.checklist_id, office.office_name,
+               doctor.doc_name, registration.appointment_time, prescription.prescription_time,
+               prescription.prescription_statement, checklist.checklist_status
+        from id_relation, office, doctor, registration, prescription, checklist
+        where registration.patient_id = #{patientId}
+            and registration.state = 5
+            and prescription.prescription_statement = 4
+            and checklist.checklist_status = 2
+            and id_relation.reg_id = registration.reg_id
+            and registration.doc_id = doctor.doc_id
+            and id_relation.prescription_id = prescription.prescription_id
+            and doctor.office_id = office.office_id
+            group by reg_id
+            order by appointment_time desc;
+    </select>
+
+<!--    查看历史预约详情-->
+    <select id="historyDetail" resultType="com.cqu.hospitalsystem.Vo.historyRegVo">
+        select id_relation.id_relation_id, id_relation.reg_id, id_relation.record_id,
+               id_relation.prescription_id, id_relation.checklist_id, office.office_name,
+               doctor.doc_name, registration.appointment_time, prescription.prescription_time, prescription.prescription_statement
+        from id_relation, office, doctor, registration, prescription
+        where id_relation.id_relation_id = #{idRelationId}
+          and id_relation.reg_id = registration.reg_id
+          and registration.doc_id = doctor.doc_id
+          and id_relation.prescription_id = prescription.prescription_id
+          and doctor.office_id = office.office_id
+    </select>
+
+    <!--    查询未完成预约信息列表-->
+    <select id="showUndoList" resultType="com.cqu.hospitalsystem.Vo.undoVo">
+        select registration.reg_id, office.office_name,doctor.doc_name, registration.appointment_time,
+               registration.reg_time, registration.state, registration.queue_number
+        from office, doctor, registration
+        where registration.patient_id = #{patientId}
+          and 5 > registration.state
+          and registration.doc_id = doctor.doc_id
+          and doctor.office_id = office.office_id
+        group by reg_id
+        order by appointment_time asc, state asc;
+    </select>
+
+    <!--    查询未完成预约信息详情，挂号单状态小于4的所有-->
+    <select id="showUndoDetail" resultType="com.cqu.hospitalsystem.Vo.undoVo">
+        select registration.reg_id, office.office_name,doctor.doc_name, registration.appointment_time,
+               registration.reg_time, registration.state, registration.queue_number
+        from office, doctor, registration
+        where registration.reg_id = #{regId}
+          and 4 > registration.state
+          and registration.doc_id = doctor.doc_id
+          and doctor.office_id = office.office_id
+        group by reg_id
+    </select>
+
+<!--    就诊中未缴费详情，挂号单状态等于4-->
+    <!--    查询未完成预约信息详情-->
+    <select id="showUnpaidDetail" resultType="com.cqu.hospitalsystem.Vo.undoUnpaidVo">
+        select registration.reg_id, office.office_name,doctor.doc_name, registration.appointment_time,
+               registration.reg_time, registration.state, registration.queue_number,
+               id_relation.record_id, id_relation.prescription_id,id_relation.checklist_id
+        from office, doctor, registration, id_relation
+        where registration.reg_id = #{regId}
+          and  registration.reg_id = id_relation.reg_id
+          and 4 = registration.state
+          and registration.doc_id = doctor.doc_id
+          and doctor.office_id = office.office_id
+        group by reg_id
+    </select>
+
+
+    <!--    支付挂号单费-->
+    <update id="payOrder">
+        update registration
+        <set>
+            registration.state=1
+        </set>
+        where registration.reg_id = #{regId}
+    </update>
+
+<!--    取消挂号-->
+    <delete id="cancelOrder">
+        delete from registration where registration.reg_id = #{regId}
+    </delete>
+
+    <!--通过医生查询排队信息-->
+    <select id="queryAllByDoctor" resultMap="BaseResultMap">
+        select
+        reg_id, doc_id, patient_id, reg_time, appointment_time, queue_number, state
+        from hospital.registration
+        <where>
+            <if test="docId != null">
+                and doc_id = #{docId}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+        </where>
+    </select>
+
+
+
+
+</mapper>
+

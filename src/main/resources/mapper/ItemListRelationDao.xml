@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.ItemListRelationDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.ItemListRelation">
+        <!--@Table item_list_relation-->
+        <result property="itemListId" column="item_list_id" jdbcType="INTEGER"/>
+        <result property="checkitemId" column="checkitem_id" jdbcType="INTEGER"/>
+        <result property="checklistId" column="checklist_id" jdbcType="INTEGER"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertItemList">
+        insert into item_list_relation(checkitem_id, checklist_id, state)
+        values (#{checkitemId}, #{checklistId}, #{state})
+    </insert>
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          item_list_id, checkitem_id, checklist_id, state
+        from item_list_relation
+        where item_list_id = #{itemListId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          item_list_id, checkitem_id, checklist_id, state
+        from item_list_relation
+        <where>
+            <if test="itemListId != null">
+                and item_list_id = #{itemListId}
+            </if>
+            <if test="checkitemId != null">
+                and checkitem_id = #{checkitemId}
+            </if>
+            <if test="checklistId != null">
+                and checklist_id = #{checklistId}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          item_list_id, checkitem_id, checklist_id, state
+        from hospital.item_list_relation
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from item_list_relation
+        <where>
+            <if test="itemListId != null">
+                and item_list_id = #{itemListId}
+            </if>
+            <if test="checkitemId != null">
+                and checkitem_id = #{checkitemId}
+            </if>
+            <if test="checklistId != null">
+                and checklist_id = #{checklistId}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="itemListId" useGeneratedKeys="true">
+        insert into item_list_relation(checkitem_id, checklist_id, state)
+        values (#{checkitemId}, #{checklistId}, #{state})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="itemListId" useGeneratedKeys="true">
+        insert into item_list_relation(checkitem_id, checklist_id, state)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.checkitemId}, #{entity.checklistId}, #{entity.state})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="itemListId" useGeneratedKeys="true">
+        insert into item_list_relation(checkitem_id, checklist_id, state)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.checkitemId}, #{entity.checklistId}, #{entity.state})
+        </foreach>
+        on duplicate key update
+        checkitem_id = values(checkitem_id),
+        checklist_id = values(checklist_id),
+        state = values(state)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update item_list_relation
+        <set>
+            <if test="checkitemId != null">
+                checkitem_id = #{checkitemId},
+            </if>
+            <if test="checklistId != null">
+                checklist_id = #{checklistId},
+            </if>
+            <if test="state != null">
+                state = #{state},
+            </if>
+        </set>
+        where item_list_id = #{itemListId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from item_list_relation where item_list_id = #{itemListId}
+    </delete>
+
+</mapper>
+

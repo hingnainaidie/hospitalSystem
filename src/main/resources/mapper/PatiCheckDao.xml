@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.PatiCheckDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.PatiCheck">
+        <!--@Table pres_medi-->
+        <result property="patientIdentify" column="patient_identify" jdbcType="VARCHAR"/>
+        <result property="citemId" column="checkitem_id" jdbcType="INTEGER"/>
+        <result property="clistId" column="checklist_id" jdbcType="INTEGER"/>
+        <result property="prescriptionId" column="prescription_id" jdbcType="INTEGER"/>
+        <result property="itemListId" column="item_list_id" jdbcType="INTEGER"/>
+        <result property="prescriptionTime" column="prescribe_time" jdbcType="DATE"/>
+        <result property="prescriptionTimeplus" column="prescribe_time" jdbcType="TIME"/>
+        <result property="citemName" column="checkitem_name" jdbcType="VARCHAR"/>
+        <result property="citemPart" column="check_part" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="INTEGER"/>
+        <result property="pricePer" column="checkitem_price" jdbcType="FLOAT"/>
+        <result property="citemstate" column="state" jdbcType="INTEGER"/>
+        <result property="cliststate" column="checklist_status" jdbcType="INTEGER"/>
+        <result property="patientName" column="patient_name" jdbcType="VARCHAR"/>
+
+    </resultMap>
+    <!--查询特定行数据-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select patient_name,patient_identify,checklist_id,prescribe_time,checklist.checklist_status
+        from patient join registration using(patient_id)
+        inner join id_relation using(reg_id)
+        inner join checklist using(checklist_id)
+        where patient_identify = #{patientIdentify}
+
+
+    </select>
+
+    <!--查询所有行数据-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select distinct patient_name,patient_identify,checklist_id,prescribe_time,checklist.checklist_status
+        from patient join registration using(patient_id)
+        inner join id_relation using(reg_id)
+        inner join checklist using(checklist_id);
+    </select>
+
+    <select id="queryByPId" resultMap="BaseResultMap">
+        select patient_name,patient_identify,checklist_id,prescribe_time,checkitem_id,checkitem_name,check_part,checkitem_price,item_list_relation.state,checklist.checklist_status,item_list_id
+        from patient JOIN registration using(patient_id)
+        inner join id_relation using(reg_id)
+        inner join checklist using(checklist_id)
+        inner join item_list_relation using(checklist_id)
+        inner join checkitem using(checkitem_id)
+        where checklist_id = #{clistId};
+
+
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM patient_name,patient JOIN registration USING (patient_id)
+        INNER JOIN id_relation USING(reg_id)
+        INNER JOIN pres_medi USING(prescription_id)
+        INNER JOIN medicine USING(medicine_id);
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update checklist
+        <set>
+            checklist_status = #{cliststate},
+        </set>
+        where checklist_id = #{clistId};
+    </update>
+
+    <update id="update_checkState">
+        update item_list_relation
+        <set>
+            state = 3,
+        </set>
+        where item_list_id = #{itemListId};
+    </update>
+    <update id="update_itemState">
+        update item_list_relation
+        <set>
+            state = #{citemstate}
+        </set>
+        where item_list_id = #{itemListId};
+    </update>
+</mapper>
+

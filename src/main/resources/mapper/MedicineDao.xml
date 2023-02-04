@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.MedicineDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Medicine">
+        <!--@Table medicine-->
+        <result property="medicineId" column="medicine_id" jdbcType="INTEGER"/>
+        <result property="medicineName" column="medicine_name" jdbcType="VARCHAR"/>
+        <result property="specification" column="specification" jdbcType="VARCHAR"/>
+        <result property="frequency" column="frequency" jdbcType="VARCHAR"/>
+        <result property="dosagePer" column="dosage_per" jdbcType="VARCHAR"/>
+        <result property="pricePer" column="price_per" jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+            medicine_id, medicine_name, specification, frequency, dosage_per, price_per
+        from medicine
+        where medicine_id = #{medicineId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+        medicine_id, medicine_name, specification, frequency, dosage_per, price_per
+        from medicine
+        <where>
+            <if test="medicineId != null">
+                and medicine_id = #{medicineId}
+            </if>
+            <if test="medicineName != null and medicineName != ''">
+                and medicine_name = #{medicineName}
+            </if>
+            <if test="specification != null and specification != ''">
+                and specification = #{specification}
+            </if>
+            <if test="frequency != null and frequency != ''">
+                and frequency = #{frequency}
+            </if>
+            <if test="dosagePer != null and dosagePer != ''">
+                and dosage_per = #{dosagePer}
+            </if>
+            <if test="pricePer != null">
+                and price_per = #{pricePer}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+            medicine_id, medicine_name, specification, frequency, dosage_per, price_per
+        from hospital.medicine
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from medicine
+        <where>
+            <if test="medicineId != null">
+                and medicine_id = #{medicineId}
+            </if>
+            <if test="medicineName != null and medicineName != ''">
+                and medicine_name = #{medicineName}
+            </if>
+            <if test="specification != null and specification != ''">
+                and specification = #{specification}
+            </if>
+            <if test="frequency != null and frequency != ''">
+                and frequency = #{frequency}
+            </if>
+            <if test="dosagePer != null and dosagePer != ''">
+                and dosage_per = #{dosagePer}
+            </if>
+            <if test="pricePer != null">
+                and price_per = #{pricePer}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="medicineId" useGeneratedKeys="true">
+        insert into medicine(medicine_name, specification, frequency, dosage_per, price_per)
+        values (#{medicineName}, #{specification}, #{frequency}, #{dosagePer}, #{pricePer})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="medicineId" useGeneratedKeys="true">
+        insert into medicine(medicine_name, specification, frequency, dosage_per, price_per)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.medicineName}, #{entity.specification}, #{entity.frequency}, #{entity.dosagePer}, #{entity.pricePer})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="medicineId" useGeneratedKeys="true">
+        insert into medicine(medicine_name, specification, frequency, dosage_per, price_per)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.medicineName}, #{entity.specification}, #{entity.frequency}, #{entity.dosagePer}, #{entity.pricePer})
+        </foreach>
+        on duplicate key update
+        medicine_name = values(medicine_name),
+        specification = values(specification),
+        frequency = values(frequency),
+        dosage_per = values(dosage_per),
+        price_per = values(price_per)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update medicine
+        <set>
+            <if test="medicineName != null and medicineName != ''">
+                medicine_name = #{medicineName},
+            </if>
+            <if test="specification != null and specification != ''">
+                specification = #{specification},
+            </if>
+            <if test="frequency != null and frequency != ''">
+                frequency = #{frequency},
+            </if>
+            <if test="dosagePer != null and dosagePer != ''">
+                dosage_per = #{dosagePer},
+            </if>
+            <if test="pricePer != null">
+                price_per = #{pricePer},
+            </if>
+        </set>
+        where medicine_id = #{medicineId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from medicine where medicine_id = #{medicineId}
+    </delete>
+
+    <!--    取消单个药品，好像应该放在关联表pres_medi中-->
+    <update id="cancelMedicine" parameterType="com.cqu.hospitalsystem.Vo.preMedicineVo">
+        update pres_medi
+        <if test="prescriptionStatement == 1">
+            <set>
+                pres_medi.state=3,
+            </set>
+        </if>
+        <if test="prescriptionStatement > 1 and 4 > prescriptionStatement">
+            <set>
+                pres_medi.state=2,
+            </set>
+        </if>
+        where pres_medi.medicine_id = #{medicineId}
+        and pres_medi.prescription_id = #{prescriptionId}
+    </update>
+
+<!--    查询所有药品-->
+    <!--通过实体作为筛选条件查询-->
+    <select id="allMedicine" resultMap="BaseResultMap">
+    select
+    medicine_id, medicine_name, specification, frequency, dosage_per, price_per
+    from hospital.medicine
+    </select>
+
+
+</mapper>
+

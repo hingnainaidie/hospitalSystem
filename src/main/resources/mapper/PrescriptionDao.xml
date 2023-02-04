@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.PrescriptionDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Prescription">
+        <!--@Table prescription-->
+        <result property="prescriptionId" column="prescription_id" jdbcType="INTEGER"/>
+        <result property="prescriptionTime" column="prescription_time" jdbcType="TIMESTAMP"/>
+        <result property="prescriptionStatement" column="prescription_statement" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertPresMedi">
+        insert into prescription(prescription_time, prescription_statement)
+        values
+        <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+            (#{item},0)
+        </foreach>
+    </insert>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          prescription_id, prescription_time, prescription_statement
+        from prescription
+        where prescription_id = #{prescriptionId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          prescription_id, prescription_time, prescription_statement
+        from prescription
+        <where>
+            <if test="prescriptionId != null">
+                and prescription_id = #{prescriptionId}
+            </if>
+            <if test="prescriptionTime != null">
+                and prescription_time = #{prescriptionTime}
+            </if>
+            <if test="prescriptionStatement != null">
+                and prescription_statement = #{prescriptionStatement}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          prescription_id, prescription_time, prescription_statement
+        from hospital.prescription
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from prescription
+        <where>
+            <if test="prescriptionId != null">
+                and prescription_id = #{prescriptionId}
+            </if>
+            <if test="prescriptionTime != null">
+                and prescription_time = #{prescriptionTime}
+            </if>
+            <if test="prescriptionStatement != null">
+                and prescription_statement = #{prescriptionStatement}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="prescriptionId" useGeneratedKeys="true">
+        insert into prescription(prescription_time, prescription_statement)
+        values (#{prescriptionTime}, #{prescriptionStatement})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="prescriptionId" useGeneratedKeys="true">
+        insert into prescription(prescription_time, prescription_statement)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.prescriptionTime}, #{entity.prescriptionStatement})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="prescriptionId" useGeneratedKeys="true">
+        insert into prescription(prescription_time, prescription_statement)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.prescriptionTime}, #{entity.prescriptionStatement})
+        </foreach>
+        on duplicate key update
+        prescription_time = values(prescription_time),
+        prescription_statement = values(prescription_statement)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update prescription
+        <set>
+            <if test="prescriptionTime != null">
+                prescription_time = #{prescriptionTime},
+            </if>
+            <if test="prescriptionStatement != null">
+                prescription_statement = #{prescriptionStatement},
+            </if>
+        </set>
+        where prescription_id = #{prescriptionId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from prescription where prescription_id = #{prescriptionId}
+    </delete>
+
+
+    <!--查看已缴费处方单药品列表，0为未缴费，4为已取走-->
+    <select id="showPaidMedicine" resultType="com.cqu.hospitalsystem.Vo.preMedicineVo">
+        select registration.reg_id, medicine.medicine_id, medicine.medicine_name, registration.appointment_time,
+               medicine.specification, pres_medi.amount, medicine.frequency, pres_medi.prescription_id,
+               medicine.dosage_per, medicine.price_per, pres_medi.state, prescription.prescription_statement
+        from medicine,pres_medi, id_relation, prescription, registration
+        where registration.patient_id = #{patientId}
+            and prescription.prescription_statement > 0
+            and 4 > prescription.prescription_statement
+            and registration.reg_id = id_relation.reg_id
+            and id_relation.prescription_id = prescription.prescription_id
+            and prescription.prescription_id = pres_medi.prescription_id
+            and medicine.medicine_id = pres_medi.medicine_id
+    </select>
+
+<!--    查看历史处方-->
+    <select id="showMedicine" resultType="com.cqu.hospitalsystem.Vo.prescriptionVo">
+        select registration.reg_id, office.office_name, doctor.doc_name, prescription.prescription_time,
+               registration.appointment_time, doctor.doc_age, doctor.doc_gender, doctor.doc_phone,
+               medicalrecord.record_type, medicalrecord.record_result, prescription.prescription_statement,
+               prescription.prescription_id
+        from office, doctor, prescription, registration, medicalrecord, id_relation
+        where prescription.prescription_id = #{prescriptionId}
+            and id_relation.prescription_id = prescription.prescription_id
+            and id_relation.reg_id = registration.reg_id
+            and id_relation.record_id = medicalrecord.mrecord_id
+            and registration.doc_id = doctor.doc_id
+            and doctor.office_id = office.office_id
+    </select>
+
+    <!--查看历史处方单药品列表-->
+    <select id="showHistoryMedicine" resultType="com.cqu.hospitalsystem.Vo.preMedicineVo">
+        select registration.reg_id, medicine.medicine_id, medicine.medicine_name, medicine.specification,
+               pres_medi.amount, medicine.frequency, medicine.dosage_per, medicine.price_per, pres_medi.state,
+               prescription.prescription_statement, pres_medi.prescription_id
+        from medicine,pres_medi, id_relation, prescription, registration
+        where prescription.prescription_id = #{prescriptionId}
+          and prescription.prescription_statement = 4
+          and registration.reg_id = id_relation.reg_id
+          and id_relation.prescription_id = prescription.prescription_id
+          and prescription.prescription_id = pres_medi.prescription_id
+          and medicine.medicine_id = pres_medi.medicine_id
+    </select>
+
+    <!--查看未缴费处方单药品列表-->
+    <select id="showUnpaidPre" resultType="com.cqu.hospitalsystem.Vo.preMedicineVo">
+        select registration.reg_id, medicine.medicine_id, medicine.medicine_name, medicine.specification,
+               pres_medi.amount, medicine.frequency, medicine.dosage_per, medicine.price_per, pres_medi.state,
+               prescription.prescription_statement, pres_medi.prescription_id
+        from medicine,pres_medi, id_relation, prescription, registration
+        where prescription.prescription_id = #{prescriptionId}
+          and registration.reg_id = id_relation.reg_id
+          and id_relation.prescription_id = prescription.prescription_id
+          and prescription.prescription_id = pres_medi.prescription_id
+          and medicine.medicine_id = pres_medi.medicine_id
+    </select>
+
+<!--    交处方单费用-->
+    <update id="payMedicine">
+        update prescription
+            <set>
+                prescription.prescription_statement = 1
+            </set>
+            where prescription_id = #{prescriptionId}
+    </update>
+
+    <select id="getPrescriptionId" resultType="java.lang.Long">
+    select max(prescription_id)
+    from prescription
+    </select>
+
+
+
+
+</mapper>
+

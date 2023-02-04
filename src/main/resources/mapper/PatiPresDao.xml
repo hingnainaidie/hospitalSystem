@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.PatiPresDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.PatiPresRelation">
+        <!--@Table pres_medi-->
+        <result property="patientIdentify" column="patient_identify" jdbcType="VARCHAR"/>
+        <result property="medicineId" column="medicine_id" jdbcType="INTEGER"/>
+        <result property="prescriptionId" column="prescription_id" jdbcType="INTEGER"/>
+        <result property="connectId" column="connect_id" jdbcType="INTEGER"/>
+        <result property="prescriptionTime" column="prescription_time" jdbcType="DATE"/>
+        <result property="prescriptionTimeplus" column="prescription_time" jdbcType="TIME"/>
+        <result property="medicineName" column="medicine_name" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="INTEGER"/>
+        <result property="pricePer" column="price_per" jdbcType="FLOAT"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="prestate" column="prescription_statement" jdbcType="INTEGER"/>
+        <result property="patientName" column="patient_name" jdbcType="VARCHAR"/>
+
+    </resultMap>
+    <!--查询特定行数据-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select patient_name,patient_identify,prescription_id,prescription_time,prescription.prescription_statement
+        from patient JOIN registration using(patient_id)
+        inner join id_relation using(reg_id)
+        inner join prescription USING(prescription_id)
+        where patient_identify = #{patientIdentify}
+
+
+    </select>
+
+    <!--查询所有行数据-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select distinct patient_name,patient_identify,prescription_id,prescription_time,prescription.prescription_statement
+        from patient JOIN registration using(patient_id)
+        inner join id_relation using(reg_id)
+        INNER JOIN pres_medi USING(prescription_id)
+        inner join prescription USING(prescription_id);
+    </select>
+    <select id="queryreturnAll" resultMap="BaseResultMap">
+        select patient_name,patient_identify,prescription_id,prescription_time,medicine_id,medicine.medicine_name,amount,price_per,pres_medi.state,prescription.prescription_statement,connect_id
+        from patient JOIN registration using(patient_id)
+        inner join id_relation using(reg_id)
+        INNER JOIN pres_medi USING(prescription_id)
+        inner join prescription USING(prescription_id)
+        INNER JOIN medicine USING(medicine_id)
+        where pres_medi.state = 2;
+    </select>
+    <select id="queryByPId" resultMap="BaseResultMap">
+        select patient_name,patient_identify,prescription_id,prescription_time,medicine_id,medicine.medicine_name,amount,price_per,pres_medi.state,prescription.prescription_statement,connect_id
+        from patient JOIN registration using(patient_id)
+        inner join id_relation using(reg_id)
+        INNER JOIN pres_medi USING(prescription_id)
+        inner join prescription USING(prescription_id)
+        INNER JOIN medicine USING(medicine_id)
+        where prescription_id = #{prescriptionId};
+
+
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM patient JOIN registration USING (patient_id)
+        INNER JOIN id_relation USING(reg_id)
+        INNER JOIN pres_medi USING(prescription_id)
+        INNER JOIN medicine USING(medicine_id);
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update prescription
+        <set>
+                prescription_statement = #{prestate},
+        </set>
+        where prescription_id = #{prescriptionId};
+    </update>
+
+    <update id="update_mediState">
+        update pres_medi
+        <set>
+            state = 3,
+        </set>
+        where connect_id = #{connectId};
+    </update>
+</mapper>
+

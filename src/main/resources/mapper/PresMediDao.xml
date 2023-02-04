@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.PresMediDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.PresMedi">
+        <!--@Table pres_medi-->
+        <result property="connectId" column="connect_id" jdbcType="INTEGER"/>
+        <result property="prescriptionId" column="prescription_id" jdbcType="INTEGER"/>
+        <result property="medicineId" column="medicine_id" jdbcType="INTEGER"/>
+        <result property="amount" column="amount" jdbcType="INTEGER"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <insert id="insertPresMedi" >
+        insert into pres_medi(prescription_id, medicine_id, amount, state)
+        values (#{prescriptionId}, #{medicineId}, #{amount}, #{state})
+    </insert>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          connect_id, prescription_id, medicine_id, amount, state
+        from pres_medi
+        where connect_id = #{connectId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          connect_id, prescription_id, medicine_id, amount, state
+        from pres_medi
+        <where>
+            <if test="connectId != null">
+                and connect_id = #{connectId}
+            </if>
+            <if test="prescriptionId != null">
+                and prescription_id = #{prescriptionId}
+            </if>
+            <if test="medicineId != null">
+                and medicine_id = #{medicineId}
+            </if>
+            <if test="amount != null">
+                and amount = #{amount}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          connect_id, prescription_id, medicine_id, amount, state
+        from hospital.pres_medi
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from pres_medi
+        <where>
+            <if test="connectId != null">
+                and connect_id = #{connectId}
+            </if>
+            <if test="prescriptionId != null">
+                and prescription_id = #{prescriptionId}
+            </if>
+            <if test="medicineId != null">
+                and medicine_id = #{medicineId}
+            </if>
+            <if test="amount != null">
+                and amount = #{amount}
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="connectId" useGeneratedKeys="true">
+        insert into pres_medi(prescription_id, medicine_id, amount, state)
+        values (#{prescriptionId}, #{medicineId}, #{amount}, #{state})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="connectId" useGeneratedKeys="true">
+        insert into pres_medi(prescription_id, medicine_id, amount, state)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.prescriptionId}, #{entity.medicineId}, #{entity.amount}, #{entity.state})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="connectId" useGeneratedKeys="true">
+        insert into pres_medi(prescription_id, medicine_id, amount, state)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.prescriptionId}, #{entity.medicineId}, #{entity.amount}, #{entity.state})
+        </foreach>
+        on duplicate key update
+        prescription_id = values(prescription_id),
+        medicine_id = values(medicine_id),
+        amount = values(amount),
+        state = values(state)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update pres_medi
+        <set>
+            <if test="prescriptionId != null">
+                prescription_id = #{prescriptionId},
+            </if>
+            <if test="medicineId != null">
+                medicine_id = #{medicineId},
+            </if>
+            <if test="amount != null">
+                amount = #{amount},
+            </if>
+            <if test="state != null">
+                state = #{state},
+            </if>
+        </set>
+        where connect_id = #{connectId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from pres_medi where connect_id = #{connectId}
+    </delete>
+
+</mapper>
+

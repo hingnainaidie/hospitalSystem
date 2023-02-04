@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.OfficeDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Office">
+        <!--@Table office-->
+        <result property="officeId" column="office_id" jdbcType="INTEGER"/>
+        <result property="officeName" column="office_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="allOffice" resultMap="BaseResultMap">
+        select
+            office_id, office_name
+        from hospital.office
+    </select>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          office_id, office_name
+        from office
+        where office_id = #{officeId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          office_id, office_name
+        from office
+        <where>
+            <if test="officeId != null">
+                and office_id = #{officeId}
+            </if>
+            <if test="officeName != null and officeName != ''">
+                and office_name = #{officeName}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          office_id, office_name
+        from hospital.office
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from office
+        <where>
+            <if test="officeId != null">
+                and office_id = #{officeId}
+            </if>
+            <if test="officeName != null and officeName != ''">
+                and office_name = #{officeName}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="officeId" useGeneratedKeys="true">
+        insert into office(office_name)
+        values (#{officeName})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="officeId" useGeneratedKeys="true">
+        insert into office(office_name)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.officeName})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="officeId" useGeneratedKeys="true">
+        insert into office(office_name)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.officeName})
+        </foreach>
+        on duplicate key update
+        office_name = values(office_name)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update office
+        <set>
+            <if test="officeName != null and officeName != ''">
+                office_name = #{officeName},
+            </if>
+        </set>
+        where office_id = #{officeId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from office where office_id = #{officeId}
+    </delete>
+
+    <!--按名查询-->
+    <select id="queryAllByName" resultMap="BaseResultMap">
+        select
+            office_id, office_name
+        from office
+        where office_name = #{officeName}
+    </select>
+
+</mapper>
+

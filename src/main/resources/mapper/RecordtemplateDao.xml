@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.RecordtemplateDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Recordtemplate">
+        <!--@Table recordtemplate-->
+        <result property="rtemplateId" column="rtemplate_id" jdbcType="INTEGER"/>
+        <result property="templateName" column="template_name" jdbcType="VARCHAR"/>
+        <result property="templateResult" column="template_result" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="searchTemplate" resultMap="BaseResultMap">
+        select
+            rtemplate_id, template_name, template_result
+        from recordtemplate
+        where template_name like concat('%',#{templateName},'%')
+    </select>
+
+    <insert id="saveTemplate" parameterType="com.cqu.hospitalsystem.entity.Recordtemplate">
+        insert into recordtemplate (template_name,template_result)
+        values (#{templateName},#{templateResult})
+    </insert>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          rtemplate_id, template_name, template_result
+        from recordtemplate
+        where rtemplate_id = #{rtemplateId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          rtemplate_id, template_name, template_result
+        from recordtemplate
+        <where>
+            <if test="rtemplateId != null">
+                and rtemplate_id = #{rtemplateId}
+            </if>
+            <if test="templateName != null and templateName != ''">
+                and template_name = #{templateName}
+            </if>
+            <if test="templateResult != null and templateResult != ''">
+                and template_result = #{templateResult}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          rtemplate_id, template_name, template_result
+        from hospital.recordtemplate
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from recordtemplate
+        <where>
+            <if test="rtemplateId != null">
+                and rtemplate_id = #{rtemplateId}
+            </if>
+            <if test="templateName != null and templateName != ''">
+                and template_name = #{templateName}
+            </if>
+            <if test="templateResult != null and templateResult != ''">
+                and template_result = #{templateResult}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="rtemplateId" useGeneratedKeys="true">
+        insert into recordtemplate(template_name, template_result)
+        values (#{templateName}, #{templateResult})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="rtemplateId" useGeneratedKeys="true">
+        insert into recordtemplate(template_name, template_result)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.templateName}, #{entity.templateResult})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="rtemplateId" useGeneratedKeys="true">
+        insert into recordtemplate(template_name, template_result)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.templateName}, #{entity.templateResult})
+        </foreach>
+        on duplicate key update
+        template_name = values(template_name),
+        template_result = values(template_result)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update recordtemplate
+        <set>
+            <if test="templateName != null and templateName != ''">
+                template_name = #{templateName},
+            </if>
+            <if test="templateResult != null and templateResult != ''">
+                template_result = #{templateResult},
+            </if>
+        </set>
+        where rtemplate_id = #{rtemplateId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from recordtemplate where rtemplate_id = #{rtemplateId}
+    </delete>
+
+</mapper>
+

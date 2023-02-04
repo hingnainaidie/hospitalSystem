@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqu.hospitalsystem.dao.CheckitemDao">
+
+    <resultMap id="BaseResultMap" type="com.cqu.hospitalsystem.entity.Checkitem">
+        <!--@Table checkitem-->
+        <result property="checkitemId" column="checkitem_id" jdbcType="INTEGER"/>
+        <result property="officeId" column="office_id" jdbcType="INTEGER"/>
+        <result property="checkitemName" column="checkitem_name" jdbcType="VARCHAR"/>
+        <result property="checkPart" column="check_part" jdbcType="VARCHAR"/>
+        <result property="checkitemPrice" column="checkitem_price" jdbcType="NUMERIC"/>
+        <result property="checkitemNote" column="checkitem_note" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="allCheckitem" resultMap="BaseResultMap">
+        select *
+        from checkitem
+    </select>
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          checkitem_id, office_id, checkitem_name, check_part, checkitem_price, checkitem_note
+        from checkitem
+        where checkitem_id = #{checkitemId}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          checkitem_id, office_id, checkitem_name, check_part, checkitem_price, checkitem_note
+        from checkitem
+        <where>
+            <if test="checkitemId != null">
+                and checkitem_id = #{checkitemId}
+            </if>
+            <if test="officeId != null">
+                and office_id = #{officeId}
+            </if>
+            <if test="checkitemName != null and checkitemName != ''">
+                and checkitem_name = #{checkitemName}
+            </if>
+            <if test="checkPart != null and checkPart != ''">
+                and check_part = #{checkPart}
+            </if>
+            <if test="checkitemPrice != null">
+                and checkitem_price = #{checkitemPrice}
+            </if>
+            <if test="checkitemNote != null and checkitemNote != ''">
+                and checkitem_note = #{checkitemNote}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          checkitem_id, office_id, checkitem_name, check_part, checkitem_price, checkitem_note
+        from hospital.checkitem
+    </select>
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from checkitem
+        <where>
+            <if test="checkitemId != null">
+                and checkitem_id = #{checkitemId}
+            </if>
+            <if test="officeId != null">
+                and office_id = #{officeId}
+            </if>
+            <if test="checkitemName != null and checkitemName != ''">
+                and checkitem_name = #{checkitemName}
+            </if>
+            <if test="checkPart != null and checkPart != ''">
+                and check_part = #{checkPart}
+            </if>
+            <if test="checkitemPrice != null">
+                and checkitem_price = #{checkitemPrice}
+            </if>
+            <if test="checkitemNote != null and checkitemNote != ''">
+                and checkitem_note = #{checkitemNote}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="checkitemId" useGeneratedKeys="true">
+        insert into checkitem(office_id, checkitem_name, check_part, checkitem_price, checkitem_note)
+        values (#{officeId}, #{checkitemName}, #{checkPart}, #{checkitemPrice}, #{checkitemNote})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="checkitemId" useGeneratedKeys="true">
+        insert into checkitem(office_id, checkitem_name, check_part, checkitem_price, checkitem_note)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.officeId}, #{entity.checkitemName}, #{entity.checkPart}, #{entity.checkitemPrice}, #{entity.checkitemNote})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="checkitemId" useGeneratedKeys="true">
+        insert into checkitem(office_id, checkitem_name, check_part, checkitem_price, checkitem_note)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.officeId}, #{entity.checkitemName}, #{entity.checkPart}, #{entity.checkitemPrice}, #{entity.checkitemNote})
+        </foreach>
+        on duplicate key update
+        office_id = values(office_id),
+        checkitem_name = values(checkitem_name),
+        check_part = values(check_part),
+        checkitem_price = values(checkitem_price),
+        checkitem_note = values(checkitem_note)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update checkitem
+        <set>
+            <if test="officeId != null">
+                office_id = #{officeId},
+            </if>
+            <if test="checkitemName != null and checkitemName != ''">
+                checkitem_name = #{checkitemName},
+            </if>
+            <if test="checkPart != null and checkPart != ''">
+                check_part = #{checkPart},
+            </if>
+            <if test="checkitemPrice != null">
+                checkitem_price = #{checkitemPrice},
+            </if>
+            <if test="checkitemNote != null and checkitemNote != ''">
+                checkitem_note = #{checkitemNote},
+            </if>
+        </set>
+        where checkitem_id = #{checkitemId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from checkitem where checkitem_id = #{checkitemId}
+    </delete>
+
+<!--    取消检查项目-->
+    <update id="cancelCheck" parameterType="com.cqu.hospitalsystem.Vo.preCheck">
+        update item_list_relation
+            <set>
+                item_list_relation.state = 3
+            </set>
+        where item_list_relation.checkitem_id = #{checkitemId}
+            and item_list_relation.checklist_id = #{checklistId}
+    </update>
+
+</mapper>
+
